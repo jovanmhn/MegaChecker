@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.28307.271
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WindowsFormsApp11", "WindowsFormsApp11\WindowsFormsApp11.csproj", "{A43FBEB8-C06B-414F-9027-2E82B500472E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MegaChecker", "WindowsFormsApp11\MegaChecker.csproj", "{A43FBEB8-C06B-414F-9027-2E82B500472E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
