@@ -29,7 +29,7 @@ namespace MegaChecker
 
         private void simpleButton1_Click(object sender, EventArgs e)
         {
-            File.Copy(Path.Combine(Application.StartupPath, "MegaChecker.xml"), Path.Combine(Application.StartupPath, "MegaChecker-backup.xml"), true);
+            
             foreach (Binding X in credentialBindingSource.CurrencyManager.Bindings) X.WriteValue();
             XmlSerializer ser = new XmlSerializer(typeof(Credentials));
             FileStream stream = new FileStream(Application.StartupPath + "\\" + "MegaChecker.xml", FileMode.OpenOrCreate);
@@ -42,7 +42,7 @@ namespace MegaChecker
 
         private void simpleButton3_Click(object sender, EventArgs e)
         {
-            File.Copy(Path.Combine(Application.StartupPath, "MegaChecker.xml"), Path.Combine(Application.StartupPath, "MegaChecker-backup.xml"), true);
+            
             Svi_kredencijali.kredencijali.Add(new Credentials.Credential());
             credentialBindingSource.DataSource = Svi_kredencijali.kredencijali;
             gridView1.RefreshData();

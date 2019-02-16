@@ -1,4 +1,5 @@
 ﻿using CG.Web.MegaApiClient;
+using DevExpress.XtraEditors;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -94,9 +95,19 @@ namespace MegaChecker
         {
             this.Cursor = Cursors.WaitCursor;
             XmlSerializer ser = new XmlSerializer(typeof(Credentials));
-            FileStream stream = new FileStream(Application.StartupPath+"\\MegaChecker.xml", FileMode.Open);
-            Svi_kredencijali = (Credentials)ser.Deserialize(stream);
-            stream.Close();
+            try
+            {
+                FileStream stream = new FileStream(Application.StartupPath + "\\MegaChecker.xml", FileMode.Open);
+                Svi_kredencijali = (Credentials)ser.Deserialize(stream);
+                stream.Close();
+            }
+            catch (Exception ex)
+            {
+                XtraMessageBox.Show(ex.Message);
+                goto skip;
+            }
+            File.Copy(Path.Combine(Application.StartupPath, "MegaChecker.xml"), Path.Combine(Application.StartupPath, "MegaChecker-backup.xml"), true);
+        skip:;
 
             var x = Svi_kredencijali.kredencijali;
             List < Klijenti > lista = new List<Klijenti>();
@@ -143,16 +154,17 @@ namespace MegaChecker
             
             if (gridView1.IsDataRow(gridView1.FocusedRowHandle) && e.Clicks == 2 && e.Button == MouseButtons.Left)
             {
-                Klijenti klijent = (Klijenti)gridView1.GetRow(gridView1.FocusedRowHandle);
-                MegaApiClient mega = new MegaApiClient();
-                var auth = mega.GenerateAuthInfos(klijent.username, klijent.pass);
-                mega.Login(auth);
-                var nodes = mega.GetNodes();
+                barButtonItem1.PerformClick();
+                //Klijenti klijent = (Klijenti)gridView1.GetRow(gridView1.FocusedRowHandle);
+                //MegaApiClient mega = new MegaApiClient();
+                //var auth = mega.GenerateAuthInfos(klijent.username, klijent.pass);
+                //mega.Login(auth);
+                //var nodes = mega.GetNodes();
 
-                List<INode> allFiles = nodes.Where(n => n.Type == NodeType.File).ToList();
-                var baze = allFiles.Where(xx => xx.CreationDate.Date == klijent.zadnji_upload.Value.Date).Select(ww=> ww.Name).ToList();
-                string box = String.Join(Environment.NewLine, baze.ToArray());
-                MessageBox.Show(box,"Backupovani fajlovi",MessageBoxButtons.OK,MessageBoxIcon.Information);
+                //List<INode> allFiles = nodes.Where(n => n.Type == NodeType.File).ToList();
+                //var baze = allFiles.Where(xx => xx.CreationDate.Date == klijent.zadnji_upload.Value.Date).Select(ww=> ww.Name).ToList();
+                //string box = String.Join(Environment.NewLine, baze.ToArray());
+                //MessageBox.Show(box,"Backup fajlovi",MessageBoxButtons.OK,MessageBoxIcon.Information);
             }
             if(gridView1.IsDataRow(gridView1.FocusedRowHandle)  && e.Button == MouseButtons.Right)
             {
@@ -176,7 +188,7 @@ namespace MegaChecker
             mega.Login(auth);
             var nodes = mega.GetNodes();
 
-            //klijent.zadnji_upload = nodes.Where(n => n.Type == NodeType.File).OrderByDescending(xx=> xx.CreationDate).FirstOrDefault().CreationDate;
+            
             klijent.zadnji_upload = nodes.Where(n => n.Type == NodeType.File).Max(xx=> xx.CreationDate);
             gridControl1.Refresh();
             gridView1.RefreshData();
@@ -189,6 +201,44 @@ namespace MegaChecker
             FormDownload frm = new FormDownload(klijent);
             frm.Text = klijent.naziv;
             frm.ShowDialog();
+        }
+        async void Checkup()
+        {
+            var wait = DevExpress.XtraSplashScreen.SplashScreenManager.ShowOverlayForm(this.simpleButton1);
+            progressBarControl1.Properties.Minimum = 0;
+            progressBarControl1.Properties.Maximum = main_lista.Count;
+            progressBarControl1.Properties.Step = 1;
+            progressBarControl1.Properties.PercentView = true;
+            try
+            {
+                foreach (var klijent in main_lista)
+                {
+
+                    MegaApiClient mega = new MegaApiClient();
+                    var auth = mega.GenerateAuthInfos(klijent.username, klijent.pass);
+                    mega.Login(auth);
+                    var nodes = await mega.GetNodesAsync();
+
+                    klijent.zadnji_upload = nodes.Where(n => n.Type == NodeType.File).Max(xx => xx.CreationDate);
+                    gridControl1.Refresh();
+                    gridView1.RefreshData();
+                    progressBarControl1.PerformStep();
+                    progressBarControl1.Update();
+
+                }
+            }
+            catch (Exception ex)
+            {
+                DevExpress.XtraSplashScreen.SplashScreenManager.CloseOverlayForm(wait);
+                XtraMessageBox.Show(ex.Message);
+            }
+            DevExpress.XtraSplashScreen.SplashScreenManager.CloseOverlayForm(wait);
+            progressBarControl1.EditValue = 0;
+        }
+
+        private void simpleButton1_Click(object sender, EventArgs e)
+        {
+             Checkup();
         }
     }
     [Serializable]
