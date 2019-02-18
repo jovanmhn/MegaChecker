@@ -29,10 +29,20 @@ namespace MegaChecker
         public void INIT()
         {
             this.Cursor = Cursors.WaitCursor;
-            XmlSerializer ser = new XmlSerializer(typeof(Credentials));
-            FileStream stream = new FileStream(Application.StartupPath + "\\MegaChecker.xml", FileMode.Open);
-            Svi_kredencijali = (Credentials)ser.Deserialize(stream);
-            stream.Close();
+            try
+            {
+                XmlSerializer ser = new XmlSerializer(typeof(Credentials));
+                FileStream stream = new FileStream(Application.StartupPath + "\\MegaChecker.xml", FileMode.Open);
+                Svi_kredencijali = (Credentials)ser.Deserialize(stream);
+                stream.Close();
+            }
+            catch (Exception ex)
+            {
+                XtraMessageBox.Show(ex.Message + Environment.NewLine+"Vjerovatno los xml");
+                goto skip;
+            }
+            File.Copy(Path.Combine(Application.StartupPath, "MegaChecker.xml"), Path.Combine(Application.StartupPath, "MegaChecker-backup.xml"), true);
+        
 
             var x = Svi_kredencijali.kredencijali;
             main_lista = new List<Klijenti>();
@@ -53,6 +63,7 @@ namespace MegaChecker
             this.Cursor = Cursors.Default;
             gridControl1.DataSource = main_lista;
             gridView1.RefreshData();
+        skip:;
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -93,41 +104,41 @@ namespace MegaChecker
         }
         private void button2_Click(object sender, EventArgs e)
         {
-            this.Cursor = Cursors.WaitCursor;
-            XmlSerializer ser = new XmlSerializer(typeof(Credentials));
-            try
-            {
-                FileStream stream = new FileStream(Application.StartupPath + "\\MegaChecker.xml", FileMode.Open);
-                Svi_kredencijali = (Credentials)ser.Deserialize(stream);
-                stream.Close();
-            }
-            catch (Exception ex)
-            {
-                XtraMessageBox.Show(ex.Message);
-                goto skip;
-            }
-            File.Copy(Path.Combine(Application.StartupPath, "MegaChecker.xml"), Path.Combine(Application.StartupPath, "MegaChecker-backup.xml"), true);
-        skip:;
+        //    this.Cursor = Cursors.WaitCursor;
+        //    XmlSerializer ser = new XmlSerializer(typeof(Credentials));
+        //    try
+        //    {
+        //        FileStream stream = new FileStream(Application.StartupPath + "\\MegaChecker.xml", FileMode.Open);
+        //        Svi_kredencijali = (Credentials)ser.Deserialize(stream);
+        //        stream.Close();
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        XtraMessageBox.Show(ex.Message);
+        //        goto skip;
+        //    }
+        //    File.Copy(Path.Combine(Application.StartupPath, "MegaChecker.xml"), Path.Combine(Application.StartupPath, "MegaChecker-backup.xml"), true);
+        //skip:;
 
-            var x = Svi_kredencijali.kredencijali;
-            List < Klijenti > lista = new List<Klijenti>();
-            foreach( var item in x )
-            {
-                MegaApiClient mega = new MegaApiClient();
-                var auth = mega.GenerateAuthInfos(item.username, item.password);
-                mega.Login(auth);
-                var nodes = mega.GetNodes();
+        //    var x = Svi_kredencijali.kredencijali;
+        //    List < Klijenti > lista = new List<Klijenti>();
+        //    foreach( var item in x )
+        //    {
+        //        MegaApiClient mega = new MegaApiClient();
+        //        var auth = mega.GenerateAuthInfos(item.username, item.password);
+        //        mega.Login(auth);
+        //        var nodes = mega.GetNodes();
 
-                List<INode> allFiles = nodes.Where(n => n.Type == NodeType.File).ToList();
-                var latest = allFiles.OrderByDescending(xx => xx.CreationDate).FirstOrDefault();
-                Klijenti klijent = new Klijenti(item.name, item.username, latest.CreationDate, item.password);
-                lista.Add(klijent);
+        //        List<INode> allFiles = nodes.Where(n => n.Type == NodeType.File).ToList();
+        //        var latest = allFiles.OrderByDescending(xx => xx.CreationDate).FirstOrDefault();
+        //        Klijenti klijent = new Klijenti(item.name, item.username, latest.CreationDate, item.password);
+        //        lista.Add(klijent);
 
                 
-            }
-            this.Cursor = Cursors.Default;
-            gridControl1.DataSource = lista;
-            gridView1.RefreshData();
+        //    }
+        //    this.Cursor = Cursors.Default;
+        //    gridControl1.DataSource = lista;
+        //    gridView1.RefreshData();
         }
 
         private void gridView1_CustomDrawCell(object sender, DevExpress.XtraGrid.Views.Base.RowCellCustomDrawEventArgs e)

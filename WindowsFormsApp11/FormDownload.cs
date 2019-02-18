@@ -67,15 +67,15 @@ namespace MegaChecker
         {
             try
             {
-                progressPanel1.Visible = true;
+                //progressPanel1.Visible = true;
                 DL();
-                simpleButton1.Enabled = false;
+                //simpleButton1.Enabled = false;
             }
             catch (Exception ex)
             {
 
-                progressPanel1.Visible = false;
-                simpleButton1.Enabled = true;
+                //progressPanel1.Visible = false;
+                //simpleButton1.Enabled = true;
                 XtraMessageBox.Show(ex.Message);
             }
 
@@ -114,28 +114,46 @@ namespace MegaChecker
         }
         async void DL()
         {
-            using (SaveFileDialog sfd = new SaveFileDialog())
+            try
             {
-                BazeGrid red = (BazeGrid)gridView1.GetRow(gridView1.FocusedRowHandle);
-                sfd.FileName = klijent.naziv + " - " + red.datum.Date.ToString("dd.MM.yyyy.") + " - " + red.name;
-                sfd.RestoreDirectory = true;
-                sfd.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-                //var client = new MegaApiClient();
-                //client.LoginAnonymous();
-                if (sfd.ShowDialog() == DialogResult.OK)
+                using (SaveFileDialog sfd = new SaveFileDialog())
                 {
-                    if (System.IO.File.Exists(sfd.FileName)) System.IO.File.Delete(sfd.FileName);
-                    //Uri fileLink = new Uri("https://mega.nz/#!bkwkHC7D!AWJuto8_fhleAI2WG0RvACtKkL_s9tAtvBXXDUp2bQk");
-                    //INodeInfo node = mega.GetNodeFromLink(fileLink);
+                    BazeGrid red = (BazeGrid)gridView1.GetRow(gridView1.FocusedRowHandle);
+                    sfd.FileName = klijent.naziv + " - " + red.datum.Date.ToString("dd.MM.yyyy.") + " - " + red.name;
+                    sfd.RestoreDirectory = true;
+                    sfd.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
 
-                    //IProgress<double> progressHandler = new Progress<double>(x => Console.WriteLine("{0}%", x));
-                    IProgress<double> progressHandler = new Progress<double>(x => progressPanel1.Description = String.Format("{0}%",Math.Round(x,2).ToString()));
-                    await mega.DownloadFileAsync(mega.GetNodes().Where(qq => qq.Id == red.id).FirstOrDefault(), sfd.FileName, progressHandler);
+                    //var client = new MegaApiClient();
+                    //client.LoginAnonymous();
+                    if (sfd.ShowDialog() == DialogResult.OK)
+                    {
+                        progressPanel1.Visible = true;
 
-                    progressPanel1.Visible = false;
-                    simpleButton1.Enabled = true;
-                    //mega.Logout();
+                        simpleButton1.Enabled = false;
+
+                        if (System.IO.File.Exists(sfd.FileName)) System.IO.File.Delete(sfd.FileName);
+                        //Uri fileLink = new Uri("https://mega.nz/#!bkwkHC7D!AWJuto8_fhleAI2WG0RvACtKkL_s9tAtvBXXDUp2bQk");
+                        //INodeInfo node = mega.GetNodeFromLink(fileLink);
+
+                        //IProgress<double> progressHandler = new Progress<double>(x => Console.WriteLine("{0}%", x));
+                        IProgress<double> progressHandler = new Progress<double>(x => progressPanel1.Description = String.Format("{0}%", Math.Round(x, 2).ToString()));
+                        await mega.DownloadFileAsync(mega.GetNodes().Where(qq => qq.Id == red.id).FirstOrDefault(), sfd.FileName, progressHandler);
+
+                        progressPanel1.Visible = false;
+                        simpleButton1.Enabled = true;
+                        //mega.Logout();
+
+                        progressPanel1.Visible = false;
+
+                        simpleButton1.Enabled = true;
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                progressPanel1.Visible = false;
+                simpleButton1.Enabled = true;
+                XtraMessageBox.Show(ex.Message);
             }
         }
     }
